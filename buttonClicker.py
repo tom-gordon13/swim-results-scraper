@@ -15,6 +15,12 @@ results_div = driver.find_element(By.CLASS_NAME, 'o-meet-layout')
 # Find all swimmer rows
 swimmer_rows = results_div.find_elements(By.TAG_NAME, 'tr')
 
+best_split = {
+    '1': None,
+    '2': None,
+    '3': None,
+    '4': None
+}
 
 for row in swimmer_rows:
     try:
@@ -44,7 +50,7 @@ for row in swimmer_rows:
 
         # Print the revealed information
         print(swimmer_name)
-        print(splits_text)
+        print(splits_text[0])
 
     except Exception as e:
         print('Error')
