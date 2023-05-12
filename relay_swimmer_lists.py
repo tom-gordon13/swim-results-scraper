@@ -1,4 +1,6 @@
 import requests
+from bs4 import BeautifulSoup
+
 relay_model = {
     'school': None,
     'year': None,
@@ -14,19 +16,21 @@ swimmer_model = {
 
 # Replace with the API endpoint URL you found
 url = 'https://www.swimcloud.com/times/99626707/splashsplits/'
-params = {'param1': 'value1'}  # Replace with the parameters you found
 
-# If the request requires headers like authentication tokens or cookies, add them here
-headers = {
-    'header1': 'value1',
-    # ...
-}
 
 # response = requests.get(url, params=params, headers=headers)
 response = requests.get(url)
 
-# The response text will be a string, so if the API returns JSON, you can convert it to a Python dictionary
-data = response.json()
+# The response will be HTML, so parse it with BeautifulSoup
+soup = BeautifulSoup(response.text, 'html.parser')
+
+# Now you can find elements in the HTML using BeautifulSoup's methods
+# For example, to find a div with class 'response-object':
+response_rows = soup.find_all('tr')
+print(response_rows)
+
+# To get the text of the response object:
+# response_text = response_object.get_text()
 
 # Now you can process the data however you need to
-print(data)
+# print(response_text)
