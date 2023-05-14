@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from selenium_packages import *
 import re
 
+from data_models import swimmer_model, relay_model
 
 # Set up the Selenium web driver
 driver = webdriver.Chrome()
@@ -15,58 +16,43 @@ wait = WebDriverWait(driver, 10)
 # links = wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'div')))
 
 # Find results table
-results_div = driver.find_element(By.CLASS_NAME, 'o-meet-layout')
+results_div = wait.until(EC.presence_of_element_located(
+    (By.CLASS_NAME, 'o-meet-layout')))
 
 # Find all team rows
 swimmer_rows = results_div.find_elements(By.TAG_NAME, 'tr')
 
-relay_model = {
-    'school': None,
-    'year': None,
-    'swimmers': []
-}
-
-
-swimmer_model = {
-    'name': None,
-    'relay_split': None
-}
-
-
-# Find all team rows in table
-# Click all times in team rows, counting # of clicks as n
-# parse over last N API response objects
-
-counter = 0
 for row in swimmer_rows:
+    try:
+        button = wait.until(EC.visibility_of_element_located(
+            (By.CLASS_NAME, 'js-time-popover')))
+        button = row.find_element(
+            By.CLASS_NAME, 'js-time-popover')
+        print(button.text)
+    except Exception as e:
+        print(e)
+
+exit()
+
+
+url_response_list = []
+
+for row in swimmer_rows:
+    print(row.text)
     try:
         # Wait for the button to be clickable
         wait = WebDriverWait(driver, 10)
-        button = wait.until(EC.element_to_be_clickable(
-            (By.CLASS_NAME, 'js-time-popover')))
 
         button = row.find_element(
             By.CLASS_NAME, 'js-time-popover')
 
-        # Click the button
-        button.click()
-        counter += 1
+        new_url = button.get('data-url')
+        url_response_list.append(new_url)
+        print(new_url)
     except Exception as e:
+        print(e)
         continue
 
-n = counter
-response_bodies = driver.execute_cdp_cmd(
-    "Network.getResponseBody", {"maxTotalSize": -1})['bodies']
-entries = response_bodies[-n:]
-
-for entry in entries:
-    url = entry['url']
-    status = entry['status']
-    content = entry['body']
-    print("URL:", url)
-    print("Status:", status)
-    print("Content:", content)
-    print("-----------------------------")
 
 exit()
 
