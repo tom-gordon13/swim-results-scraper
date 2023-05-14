@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from copy import deepcopy
 
 from selenium_packages import *
 import re
@@ -45,6 +46,7 @@ page_url = 'https://www.swimcloud.com/results/236950/event/21/'
 
 url_response_list = get_data_urls(page_url)
 
+team_list = []
 
 for url_endpoint in url_response_list:
 
@@ -58,10 +60,11 @@ for url_endpoint in url_response_list:
     response_rows = soup.find_all('tr')
     # print(response_rows)
 
-    new_team_model = relay_model
-    new_team_model['school'] = 'Florida'
+    new_team_model = deepcopy(relay_model)
+    new_team_model['school'] = 'California'
 
     for row in response_rows:
+
         tds = row.find_all('td', class_='u-text-semi')
         if tds:
             val = tds[0].text.strip()
@@ -72,9 +75,9 @@ for url_endpoint in url_response_list:
                 new_swimmer_obj['name'] = val
                 new_team_model['swimmers'].append(new_swimmer_obj)
 
-        print(new_team_model)
+    team_list.append(new_team_model)
 
-
+print(team_list)
 exit()
 
 # Replace with the API endpoint URL you found
