@@ -1,5 +1,6 @@
 relay_model = {
     'school': None,
+    'date': None,
     'year': None,
     'swimmers': []
 }

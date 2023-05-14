@@ -6,15 +6,19 @@ from selenium_packages import *
 import re
 
 from data_models import swimmer_model, relay_model
+from get_team_name import get_team_name
 
-# Set up the Selenium web driver
-# driver = webdriver.Chrome()
-# dev_tools = driver.execute_cdp_cmd("Network.enable", {})
 
-# Navigate to the webpage with the button
-# driver.get('https://www.swimcloud.com/results/236950/event/21/')
-# wait = WebDriverWait(driver, 10)
-# links = wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'div')))
+import re
+
+
+def extract_integer(url):
+    match = re.search('/times/(\d+)/splashsplits/', url)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
 
 url_response_prefix = 'https://www.swimcloud.com/'
 
@@ -42,6 +46,10 @@ def get_data_urls(url):
 
 
 page_url = 'https://www.swimcloud.com/results/236950/event/21/'
+html_content = requests.get(page_url)
+soup_full_page = BeautifulSoup(html_content.text, 'html.parser')
+
+meet_date = soup_full_page.find("li", {"id": "meet-date"}).text
 
 
 url_response_list = get_data_urls(page_url)
@@ -61,7 +69,10 @@ for url_endpoint in url_response_list:
     # print(response_rows)
 
     new_team_model = deepcopy(relay_model)
-    new_team_model['school'] = 'California'
+    response_integer = extract_integer(url_endpoint)
+    new_team_model['school'] = get_team_name(soup_full_page, response_integer)
+    new_team_model['date'] = meet_date
+    new_team_model['year'] = meet_date[-4:]
 
     for row in response_rows:
 
@@ -78,41 +89,3 @@ for url_endpoint in url_response_list:
     team_list.append(new_team_model)
 
 print(team_list)
-exit()
-
-# Replace with the API endpoint URL you found
-url = 'https://www.swimcloud.com/times/99626707/splashsplits/'
-
-
-# response = requests.get(url, params=params, headers=headers)
-response = requests.get(url)
-
-# The response will be HTML, so parse it with BeautifulSoup
-soup = BeautifulSoup(response.text, 'html.parser')
-
-# Now you can find elements in the HTML using BeautifulSoup's methods
-# For example, to find a div with class 'response-object':
-response_rows = soup.find_all('tr')
-# print(response_rows)
-
-new_team_model = relay_model
-new_team_model['school'] = 'Florida'
-
-for row in response_rows:
-    tds = row.find_all('td', class_='u-text-semi')
-    if tds:
-        val = tds[0].text.strip()
-        if val.replace(".", "").isnumeric():
-            new_team_model['swimmers'][-1]['relay_split'] = val
-        else:
-            new_swimmer_obj = swimmer_model.copy()
-            new_swimmer_obj['name'] = val
-            new_team_model['swimmers'].append(new_swimmer_obj)
-
-print(new_team_model)
-
-# To get the text of the response object:
-# response_text = response_object.get_text()
-
-# Now you can process the data however you need to
-# print(response_text)
