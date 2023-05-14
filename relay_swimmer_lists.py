@@ -15,27 +15,37 @@ driver.get('https://www.swimcloud.com/results/236950/event/21/')
 wait = WebDriverWait(driver, 10)
 # links = wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'div')))
 
-# Find results table
-results_div = wait.until(EC.presence_of_element_located(
-    (By.CLASS_NAME, 'o-meet-layout')))
+url_response_prefix = 'https://www.swimcloud.com/'
 
-# Find all team rows
-swimmer_rows = results_div.find_elements(By.TAG_NAME, 'tr')
 
-for row in swimmer_rows:
-    try:
-        button = wait.until(EC.visibility_of_element_located(
-            (By.CLASS_NAME, 'js-time-popover')))
-        button = row.find_element(
-            By.CLASS_NAME, 'js-time-popover')
-        print(button.text)
-    except Exception as e:
-        print(e)
+def get_data_urls(url):
+    # Send a GET request to the URL
+    response = requests.get(url)
 
+    # If the GET request is successful, the status code will be 200
+    if response.status_code == 200:
+        # Get the content of the response
+        page_content = response.content
+
+        # Create a BeautifulSoup object and specify the parser
+        soup = BeautifulSoup(page_content, 'html.parser')
+
+        # Find all <a> tags with a 'data-url' attribute that starts with '/times/'
+        a_tags = soup.find_all('a', attrs={'data-url': True})
+
+        # Filter out those tags whose 'data-url' doesn't start with '/times/'
+        times_urls = [tag['data-url']
+                      for tag in a_tags if tag['data-url'].startswith('/times/')]
+
+        return times_urls
+
+
+page_url = 'https://www.swimcloud.com/results/236950/event/21/'
+
+
+url_response_list = get_data_urls(page_url)
+print(url_response_list)
 exit()
-
-
-url_response_list = []
 
 for row in swimmer_rows:
     print(row.text)
