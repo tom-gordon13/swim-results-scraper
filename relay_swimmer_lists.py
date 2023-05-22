@@ -46,6 +46,7 @@ def get_data_urls(url):
 
 
 page_url = 'https://www.swimcloud.com/results/236950/event/21/'
+# page_url = 'https://www.swimcloud.com/results/118612/event/21/0/'
 html_content = requests.get(page_url)
 soup_full_page = BeautifulSoup(html_content.text, 'html.parser')
 

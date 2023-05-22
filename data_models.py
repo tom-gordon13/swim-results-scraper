@@ -8,5 +8,6 @@ relay_model = {
 
 swimmer_model = {
     'name': None,
-    'relay_split': None
-}
+    'relay_split': None,
+    'num_swims': 1,
+    'swimmer_id': None}

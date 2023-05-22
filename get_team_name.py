@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 
 
 page_url = 'https://www.swimcloud.com/results/236950/event/21/'
+# page_url = 'https://www.swimcloud.com/results/118612/event/21/0/'
 
 html_content = requests.get(page_url)
 
