@@ -8,25 +8,33 @@ page_url = 'https://www.swimcloud.com/results/194776/team/105/swims/'
 
 
 def count_string_pattern(url):
-    # Get the HTML content of the webpage
-    response = requests.get(url)
-    html_content = response.text
 
-    # Parse the HTML content
-    soup = BeautifulSoup(html_content, 'html.parser')
-    html_text = str(soup)
+    counts = {}
 
     # Use regex to find all instances of 'swimmer/<integer>/'
     pattern = re.compile(r'swimmer/(\d+)/')
-    matches = pattern.findall(html_text)
 
-    # Count the occurrences of each integer
-    counts = {}
-    for match in matches:
-        if match in counts:
-            counts[match] += 1
-        else:
-            counts[match] = 1
+    for num in range(1, find_largest_pagination(url=page_url)+1):
+
+        new_url = url + f'?page={num}'
+        print(new_url)
+
+        # Get the HTML content of the webpage
+        response = requests.get(new_url)
+        html_content = response.text
+
+        # Parse the HTML content
+        soup = BeautifulSoup(html_content, 'html.parser')
+        html_text = str(soup)
+        matches = pattern.findall(html_text)
+
+        # Count the occurrences of each integer
+
+        for match in matches:
+            if match in counts:
+                counts[match] += 1
+            else:
+                counts[match] = 1
 
     # Return the counts as a JSON object
     return json.dumps(counts)
