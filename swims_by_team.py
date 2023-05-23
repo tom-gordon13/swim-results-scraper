@@ -9,7 +9,7 @@ page_url = 'https://www.swimcloud.com/results/194776/team/105/swims/'
 
 def count_string_pattern(url):
 
-    counts = {}
+    count__indiv_swims = {}
 
     # Use regex to find all instances of 'swimmer/<integer>/'
     pattern = re.compile(r'swimmer/(\d+)/')
@@ -31,13 +31,13 @@ def count_string_pattern(url):
         # Count the occurrences of each integer
 
         for match in matches:
-            if match in counts:
-                counts[match] += 1
+            if match in count__indiv_swims:
+                count__indiv_swims[match] += 1
             else:
-                counts[match] = 1
+                count__indiv_swims[match] = 1
 
-    # Return the counts as a JSON object
-    return json.dumps(counts)
+    # Return the count__indiv_swims as a J`SON object
+    return json.dumps(count__indiv_swims)
 
 
 def find_largest_pagination(url):
@@ -67,3 +67,28 @@ def find_largest_pagination(url):
 
 print(find_largest_pagination(url=page_url))
 print(count_string_pattern(url=page_url))
+
+
+def find_relay_links(url):
+    # Download the page
+    response = requests.get(url)
+    response.raise_for_status()  # Raise exception if the request failed
+
+    # Parse the HTML content of the page with BeautifulSoup
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find all elements with a class of 'c-nav__item' and an href matching the pattern
+    matching_elements = soup.find_all(
+        lambda tag: tag.get('class') == ['c-nav__item'] and
+        re.match(r'/results/\d+/event/\d+/', tag.get('href', '')) and
+        tag.find('div', attrs={'title': re.compile(r'\bRelay\b', re.I)})
+    )
+
+    # Get the href attribute of each matching element
+    hrefs = [element.get('href') for element in matching_elements]
+
+    return hrefs
+
+
+meet_dashboard_url = 'https://www.swimcloud.com/results/236950/'
+print(find_relay_links(url=meet_dashboard_url))
