@@ -1,3 +1,4 @@
+from collections import Counter
 import re
 import json
 import requests
@@ -7,7 +8,7 @@ from bs4 import BeautifulSoup
 page_url = 'https://www.swimcloud.com/results/194776/team/105/swims/'
 
 
-def count_string_pattern(url):
+def count_indiv_swims(url):
 
     count__indiv_swims = {}
 
@@ -36,8 +37,8 @@ def count_string_pattern(url):
             else:
                 count__indiv_swims[match] = 1
 
-    # Return the count__indiv_swims as a J`SON object
-    return json.dumps(count__indiv_swims)
+    # Return the count__indiv_swims as a JSON object
+    return count__indiv_swims
 
 
 def find_largest_pagination(url):
@@ -65,8 +66,7 @@ def find_largest_pagination(url):
     return max_val
 
 
-print(find_largest_pagination(url=page_url))
-print(count_string_pattern(url=page_url))
+swim_counts = count_indiv_swims(url=page_url)
 
 
 def find_relay_links(url):
@@ -91,4 +91,45 @@ def find_relay_links(url):
 
 
 meet_dashboard_url = 'https://www.swimcloud.com/results/236950/'
-print(find_relay_links(url=meet_dashboard_url))
+url_prefix = 'https://www.swimcloud.com'
+
+relay_urls = find_relay_links(url=meet_dashboard_url)
+
+
+# HAVE NOT TESTED YET
+
+
+def count_swimmer_ids(url):
+    # Download the page
+    response = requests.get(url)
+    response.raise_for_status()  # Raise exception if the request failed
+
+    # Parse the HTML content of the page with BeautifulSoup
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find all elements with an href matching the pattern
+    matching_elements = soup.find_all(
+        href=re.compile(r'/results/\d+/swimmer/\d+/'))
+
+    # Get the href attribute of each matching element
+    hrefs = [element.get('href') for element in matching_elements]
+
+    # Extract the swimmer id (integer2) from each href
+    swimmer_ids = [re.search(r'/swimmer/(\d+)/', href).group(1)
+                   for href in hrefs]
+
+    # Count the occurrences of each swimmer id
+    for swimmer_id in swimmer_ids:
+        if swimmer_id in swim_counts:
+            swim_counts[swimmer_id] += 1
+
+    return swim_counts
+
+
+def populate_relay_swims(swim_obj):
+    for url in relay_urls:
+        swim_obj = count_swimmer_ids(url=url_prefix+url)
+
+
+populate_relay_swims(swim_obj=swim_counts)
+print(swim_counts)
